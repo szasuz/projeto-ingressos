@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TicketFlow — Reserva de Ingressos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(circle at 20% 0%, #171c36 0%, #090c18 45%, #060810 100%);
+      color: #f4f4f5;
+    }
+    .glass-card {
+      background: rgba(17, 22, 38, 0.72);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    }
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #273049; border-radius: 9999px; }
+  </style>
+</head>
+<body class="min-h-screen antialiased flex flex-col">
+
+  <!-- Topbar -->
+  <header class="border-b border-slate-800/70 bg-slate-950/40 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <span class="text-lg font-semibold tracking-tight text-white">TicketFlow</span>
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          RabbitMQ Producer
+        </span>
+        <a href="/docs" target="_blank" class="text-xs text-slate-400 hover:text-white transition-colors px-2.5 py-1.5 rounded-md border border-slate-800 hover:border-slate-700">
+          API Docs
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="max-w-6xl w-full mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+    <!-- Card Principal (Baseado no seu rascunho) -->
+    <section class="lg:col-span-8 glass-card rounded-2xl p-6 sm:p-8">
+      <form id="form-reserva" class="space-y-6">
+
+        <!-- Cabeçalho: Nome do Evento -> Data -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800/80">
+          <div>
+            <span class="text-xs uppercase tracking-wider text-slate-400">Nome do Evento</span>
+            <h1 id="evento-nome" class="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+              Festival Eletrônico 2026
+            </h1>
+          </div>
+
+          <div class="hidden sm:block text-2xl text-slate-500 select-none">→</div>
+
+          <div class="sm:text-right">
+            <span class="text-xs uppercase tracking-wider text-slate-400">Data</span>
+            <div class="text-xl sm:text-2xl font-semibold text-white mt-1">
+              12 de Dezembro de 2026
+            </div>
+          </div>
+        </div>
+
+        <!-- Infos do Evento -->
+        <div class="space-y-1">
+          <span class="text-xs uppercase tracking-wider text-slate-400">Infos</span>
+          <p class="text-sm text-slate-300 flex flex-wrap items-center gap-2">
+            <span>📍 Allianz Parque, SP</span>
+            <span class="text-slate-600">•</span>
+            <span>Portões: 16h</span>
+            <span class="text-slate-600">•</span>
+            <span>Classificação: 16 anos</span>
+          </p>
+        </div>
+
+        <!-- Linha 1: Nome | Documento | E-mail -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="space-y-1.5">
+            <label for="cliente" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Nome</label>
+            <input id="cliente" type="text" value="Gabriel Quintino" required
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/70 border border-slate-700/80 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" />
+          </div>
+
+          <div class="space-y-1.5">
+            <label for="documento" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Documento</label>
+            <input id="documento" type="text" value="404.202.404-01" placeholder="CPF ou RG" required
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/70 border border-slate-700/80 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" />
+          </div>
+
+          <div class="space-y-1.5">
+            <label for="email" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Email</label>
+            <input id="email" type="email" value="quintino@gmail.com" required
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/70 border border-slate-700/80 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" />
+          </div>
+        </div>
+
+        <!-- Linha 2: QTD | Setor (Padrão/VIP) | Pagamento -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
+          <!-- QTD -->
+          <div class="sm:col-span-3 space-y-1.5">
+            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">QTD</label>
+            <div class="flex items-center justify-between h-[42px] px-2 rounded-xl bg-slate-950/70 border border-slate-700/80">
+              <button type="button" id="qty-minus" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 font-semibold transition-colors cursor-pointer">−</button>
+              <span id="qty-display" class="text-sm font-semibold text-white">2</span>
+              <button type="button" id="qty-plus" class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-300 font-semibold transition-colors cursor-pointer">+</button>
+            </div>
+          </div>
+
+          <!-- Setor (Padrão / VIP) -->
+          <div class="sm:col-span-4 space-y-1.5">
+            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Setor</label>
+            <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-950/70 border border-slate-700/80 h-[42px]">
+              <button type="button" data-setor="Padrão" data-preco="180"
+                class="setor-btn rounded-lg text-xs font-semibold transition-all cursor-pointer bg-indigo-600 text-white">
+                Padrão
+              </button>
+              <button type="button" data-setor="VIP" data-preco="450"
+                class="setor-btn rounded-lg text-xs font-semibold transition-all cursor-pointer text-slate-400 hover:text-white">
+                VIP
+              </button>
+            </div>
+          </div>
+
+          <!-- Pagamento -->
+          <div class="sm:col-span-5 space-y-1.5">
+            <label for="pagamento" class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Pagamento</label>
+            <select id="pagamento"
+              class="w-full h-[42px] px-3.5 rounded-xl bg-slate-950/70 border border-slate-700/80 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors">
+              <option value="Cartão de Crédito • 3x">💳 Cartão de Crédito • 3x</option>
+              <option value="Cartão de Crédito • À vista">💳 Cartão de Crédito • À vista</option>
+              <option value="PIX • Aprovação Imediata">⚡ PIX • Aprovação Imediata</option>
+              <option value="Cartão de Débito">🏦 Cartão de Débito</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Resumo do Valor + Botão Reservar -->
+        <div class="pt-3 space-y-3">
+          <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+            <span id="resumo-texto">2x Ingresso Padrão (R$ 180,00 cada)</span>
+            <span id="total-display" class="text-base font-bold text-white">R$ 360,00</span>
+          </div>
+
+          <button type="submit"
+            class="w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide text-white uppercase bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:brightness-110 active:scale-[0.99] transition-all shadow-lg shadow-indigo-900/40 cursor-pointer">
+            Reservar Ingresso 🎟️
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- Painel Lateral: Monitor de Eventos RabbitMQ + Botões de Simulação -->
+    <aside class="lg:col-span-4 flex flex-col gap-4">
+      <div class="glass-card rounded-2xl p-5 flex flex-col h-[410px]">
+        <div class="flex items-start justify-between pb-3 border-b border-slate-800/80">
+          <div>
+            <h2 class="text-sm font-semibold text-white">Monitor de Eventos RabbitMQ</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Logs de simulação em tempo real</p>
+          </div>
+          <button id="btn-limpar" class="text-[11px] text-slate-500 hover:text-slate-300 transition-colors cursor-pointer">
+            Limpar
+          </button>
+        </div>
+
+        <div id="logs" class="flex-1 overflow-y-auto custom-scroll space-y-2 mt-3 pr-1">
+          <div id="empty-state" class="h-full flex flex-col items-center justify-center text-center px-4">
+            <p class="text-xs text-slate-400">Nenhum evento publicado ainda.</p>
+            <p class="text-[11px] text-slate-500 mt-1">Os retornos imediatos (HTTP 202) aparecerão aqui.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botões de Simulação (DLQ e Rajada) -->
+      <div class="glass-card rounded-2xl p-4 space-y-2.5">
+        <button type="button" id="btn-dlq"
+          class="w-full py-2.5 rounded-xl text-xs font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/35 hover:bg-rose-500/25 transition-colors cursor-pointer">
+          Simular Falha (DLQ)
+        </button>
+        <button type="button" id="btn-rajada"
+          class="w-full py-2.5 rounded-xl text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/35 hover:bg-amber-500/25 transition-colors cursor-pointer">
+          Disparar Rajada (10x)
+        </button>
+      </div>
+    </aside>
+
+  </main>
+
+  <script>
+    const API_URL = window.location.origin.startsWith("http")
+      ? "/reservas"
+      : "http://127.0.0.1:8000/reservas";
+
+    const state = {
+      evento: "Festival Eletrônico 2026",
+      setor: "Padrão",
+      preco: 180,
+      quantidade: 2,
+    };
+
+    const qtyDisplay = document.getElementById("qty-display");
+    const totalDisplay = document.getElementById("total-display");
+    const resumoTexto = document.getElementById("resumo-texto");
+    const logsEl = document.getElementById("logs");
+
+    function atualizarTotal() {
+      qtyDisplay.textContent = state.quantidade;
+      const total = state.preco * state.quantidade;
+      const precoFmt = state.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      resumoTexto.textContent = `${state.quantidade}x Ingresso ${state.setor} (${precoFmt} cada)`;
+      totalDisplay.textContent = total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    // Seletor de Setor (Padrão / VIP)
+    document.querySelectorAll(".setor-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".setor-btn").forEach((b) => {
+          b.classList.remove("bg-indigo-600", "text-white");
+          b.classList.add("text-slate-400");
+        });
+        btn.classList.remove("text-slate-400");
+        btn.classList.add("bg-indigo-600", "text-white");
+        state.setor = btn.dataset.setor;
+        state.preco = Number(btn.dataset.preco);
+        atualizarTotal();
+      });
+    });
+
+    // Quantidade
+    document.getElementById("qty-minus").addEventListener("click", () => {
+      if (state.quantidade > 1) { state.quantidade--; atualizarTotal(); }
+    });
+    document.getElementById("qty-plus").addEventListener("click", () => {
+      if (state.quantidade < 10) { state.quantidade++; atualizarTotal(); }
+    });
+
+    function montarPayload(sobrescrever = {}) {
+      return {
+        cliente: document.getElementById("cliente").value,
+        documento: document.getElementById("documento").value,
+        email: document.getElementById("email").value,
+        evento: state.evento,
+        setor: state.setor,
+        quantidade: state.quantidade,
+        pagamento: document.getElementById("pagamento").value,
+        valor_total: state.preco * state.quantidade,
+        simular_erro: false,
+        ...sobrescrever,
+      };
+    }
+
+    function adicionarLog(texto, tempoMs, tipo = "ok") {
+      const empty = document.getElementById("empty-state");
+      if (empty) empty.remove();
+
+      const estilos = {
+        ok: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
+        dlq: "border-rose-500/30 bg-rose-500/10 text-rose-300",
+        erro: "border-red-500/30 bg-red-500/10 text-red-300",
+      };
+
+      const item = document.createElement("div");
+      item.className = `px-3 py-2 rounded-lg border font-mono text-[11px] flex items-center justify-between gap-2 ${estilos[tipo]}`;
+      item.innerHTML = `<span class="truncate">${texto}</span><span class="opacity-70 shrink-0">${tempoMs}ms</span>`;
+      logsEl.prepend(item);
+    }
+
+    async function enviarReserva(payload, modo = "ok") {
+      const inicio = performance.now();
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        const tempoMs = Math.round(performance.now() - inicio);
+
+        if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+
+        const tag = modo === "dlq" ? "DLQ" : "202 OK";
+        adicionarLog(`${data.reserva_id} • reserva.criada • ${tag}`, tempoMs, modo);
+      } catch (err) {
+        const tempoMs = Math.round(performance.now() - inicio);
+        adicionarLog(`ERRO • ${err.message}`, tempoMs, "erro");
+      }
+    }
+
+    document.getElementById("form-reserva").addEventListener("submit", (e) => {
+      e.preventDefault();
+      enviarReserva(montarPayload(), "ok");
+    });
+
+    document.getElementById("btn-dlq").addEventListener("click", () => {
+      enviarReserva(montarPayload({ valor_total: 9999.0, simular_erro: true }), "dlq");
+    });
+
+    document.getElementById("btn-rajada").addEventListener("click", async () => {
+      const disparos = [];
+      for (let i = 1; i <= 10; i++) {
+        disparos.push(enviarReserva(montarPayload({ cliente: `Cliente Rajada #${i}` }), "ok"));
+      }
+      await Promise.all(disparos);
+    });
+
+    document.getElementById("btn-limpar").addEventListener("click", () => {
+      logsEl.innerHTML = `
+        <div id="empty-state" class="h-full flex flex-col items-center justify-center text-center px-4">
+          <p class="text-xs text-slate-400">Nenhum evento publicado ainda.</p>
+          <p class="text-[11px] text-slate-500 mt-1">Os retornos imediatos (HTTP 202) aparecerão aqui.</p>
+        </div>
+      `;
+    });
+
+    atualizarTotal();
+  </script>
+</body>
+</html>
