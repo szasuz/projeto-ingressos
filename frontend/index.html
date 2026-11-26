@@ -58,7 +58,7 @@
   <!-- Conteúdo Principal -->
   <main class="max-w-6xl w-full mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-    <!-- Card Principal (Baseado no seu rascunho) -->
+    <!-- Card Principal -->
     <section class="lg:col-span-8 glass-card rounded-2xl p-6 sm:p-8">
       <form id="form-reserva" class="space-y-6">
 
@@ -161,16 +161,16 @@
             <span id="total-display" class="text-base font-bold text-white">R$ 360,00</span>
           </div>
 
-          <button type="submit"
-            class="w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide text-white uppercase bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:brightness-110 active:scale-[0.99] transition-all shadow-lg shadow-indigo-900/40 cursor-pointer">
-            Reservar Ingresso 🎟️
+          <button type="submit" id="btn-submit"
+            class="w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide text-white uppercase bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:brightness-110 active:scale-[0.99] transition-all shadow-lg shadow-indigo-900/40 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+            <span id="btn-submit-text">Reservar Ingresso 🎟️</span>
           </button>
         </div>
 
       </form>
     </section>
 
-    <!-- Painel Lateral: Monitor de Eventos RabbitMQ + Botões de Simulação -->
+    <!-- Painel Lateral: Monitor de Eventos RabbitMQ + Controles de Simulação -->
     <aside class="lg:col-span-4 flex flex-col gap-4">
       <div class="glass-card rounded-2xl p-5 flex flex-col h-[410px]">
         <div class="flex items-start justify-between pb-3 border-b border-slate-800/80">
@@ -191,148 +191,29 @@
         </div>
       </div>
 
-      <!-- Botões de Simulação (DLQ e Rajada) -->
-      <div class="glass-card rounded-2xl p-4 space-y-2.5">
-        <button type="button" id="btn-dlq"
-          class="w-full py-2.5 rounded-xl text-xs font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/35 hover:bg-rose-500/25 transition-colors cursor-pointer">
-          Simular Falha (DLQ)
-        </button>
-        <button type="button" id="btn-rajada"
-          class="w-full py-2.5 rounded-xl text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/35 hover:bg-amber-500/25 transition-colors cursor-pointer">
-          Disparar Rajada (10x)
-        </button>
-      </div>
+      <!-- Painel Recolhível de Testes da Atividade -->
+      <details class="glass-card rounded-2xl p-4 group">
+        <summary class="text-xs font-semibold text-slate-400 hover:text-slate-200 cursor-pointer select-none flex items-center justify-between list-none">
+          <span>⚙️ Simulação de Cenários (Debug)</span>
+          <span class="text-[10px] text-slate-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <div class="space-y-2.5 pt-3 mt-3 border-t border-slate-800/70">
+          <button type="button" id="btn-dlq"
+            class="w-full py-2.5 rounded-xl text-xs font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/35 hover:bg-rose-500/25 transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+            Simular Falha (DLQ)
+          </button>
+          <button type="button" id="btn-rajada"
+            class="w-full py-2.5 rounded-xl text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/35 hover:bg-amber-500/25 transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+            Disparar Rajada (10x)
+          </button>
+        </div>
+      </details>
     </aside>
 
   </main>
 
-  <script>
-    const API_URL = window.location.origin.startsWith("http")
-      ? "/reservas"
-      : "http://127.0.0.1:8000/reservas";
+  <div id="toast-container" class="fixed top-20 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-    const state = {
-      evento: "Festival Eletrônico 2026",
-      setor: "Padrão",
-      preco: 180,
-      quantidade: 2,
-    };
-
-    const qtyDisplay = document.getElementById("qty-display");
-    const totalDisplay = document.getElementById("total-display");
-    const resumoTexto = document.getElementById("resumo-texto");
-    const logsEl = document.getElementById("logs");
-
-    function atualizarTotal() {
-      qtyDisplay.textContent = state.quantidade;
-      const total = state.preco * state.quantidade;
-      const precoFmt = state.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-      resumoTexto.textContent = `${state.quantidade}x Ingresso ${state.setor} (${precoFmt} cada)`;
-      totalDisplay.textContent = total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-    }
-
-    // Seletor de Setor (Padrão / VIP)
-    document.querySelectorAll(".setor-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".setor-btn").forEach((b) => {
-          b.classList.remove("bg-indigo-600", "text-white");
-          b.classList.add("text-slate-400");
-        });
-        btn.classList.remove("text-slate-400");
-        btn.classList.add("bg-indigo-600", "text-white");
-        state.setor = btn.dataset.setor;
-        state.preco = Number(btn.dataset.preco);
-        atualizarTotal();
-      });
-    });
-
-    // Quantidade
-    document.getElementById("qty-minus").addEventListener("click", () => {
-      if (state.quantidade > 1) { state.quantidade--; atualizarTotal(); }
-    });
-    document.getElementById("qty-plus").addEventListener("click", () => {
-      if (state.quantidade < 10) { state.quantidade++; atualizarTotal(); }
-    });
-
-    function montarPayload(sobrescrever = {}) {
-      return {
-        cliente: document.getElementById("cliente").value,
-        documento: document.getElementById("documento").value,
-        email: document.getElementById("email").value,
-        evento: state.evento,
-        setor: state.setor,
-        quantidade: state.quantidade,
-        pagamento: document.getElementById("pagamento").value,
-        valor_total: state.preco * state.quantidade,
-        simular_erro: false,
-        ...sobrescrever,
-      };
-    }
-
-    function adicionarLog(texto, tempoMs, tipo = "ok") {
-      const empty = document.getElementById("empty-state");
-      if (empty) empty.remove();
-
-      const estilos = {
-        ok: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-        dlq: "border-rose-500/30 bg-rose-500/10 text-rose-300",
-        erro: "border-red-500/30 bg-red-500/10 text-red-300",
-      };
-
-      const item = document.createElement("div");
-      item.className = `px-3 py-2 rounded-lg border font-mono text-[11px] flex items-center justify-between gap-2 ${estilos[tipo]}`;
-      item.innerHTML = `<span class="truncate">${texto}</span><span class="opacity-70 shrink-0">${tempoMs}ms</span>`;
-      logsEl.prepend(item);
-    }
-
-    async function enviarReserva(payload, modo = "ok") {
-      const inicio = performance.now();
-      try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        const tempoMs = Math.round(performance.now() - inicio);
-
-        if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
-
-        const tag = modo === "dlq" ? "DLQ" : "202 OK";
-        adicionarLog(`${data.reserva_id} • reserva.criada • ${tag}`, tempoMs, modo);
-      } catch (err) {
-        const tempoMs = Math.round(performance.now() - inicio);
-        adicionarLog(`ERRO • ${err.message}`, tempoMs, "erro");
-      }
-    }
-
-    document.getElementById("form-reserva").addEventListener("submit", (e) => {
-      e.preventDefault();
-      enviarReserva(montarPayload(), "ok");
-    });
-
-    document.getElementById("btn-dlq").addEventListener("click", () => {
-      enviarReserva(montarPayload({ valor_total: 9999.0, simular_erro: true }), "dlq");
-    });
-
-    document.getElementById("btn-rajada").addEventListener("click", async () => {
-      const disparos = [];
-      for (let i = 1; i <= 10; i++) {
-        disparos.push(enviarReserva(montarPayload({ cliente: `Cliente Rajada #${i}` }), "ok"));
-      }
-      await Promise.all(disparos);
-    });
-
-    document.getElementById("btn-limpar").addEventListener("click", () => {
-      logsEl.innerHTML = `
-        <div id="empty-state" class="h-full flex flex-col items-center justify-center text-center px-4">
-          <p class="text-xs text-slate-400">Nenhum evento publicado ainda.</p>
-          <p class="text-[11px] text-slate-500 mt-1">Os retornos imediatos (HTTP 202) aparecerão aqui.</p>
-        </div>
-      `;
-    });
-
-    atualizarTotal();
-  </script>
+<script src="/static/app.js"></script>
 </body>
 </html>
